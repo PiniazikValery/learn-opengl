@@ -1,4 +1,5 @@
-// To build app run 'cmake .. ; cmake --build . --config Release; ./Release/LearnOpenGL.exe' from build folder
+// To build app run 'cmake .. ; cmake --build . --config Release; ./Release/LearnOpenGL.exe' from build folder for Windows
+// To build app run 'cmake .. ; cmake --build . --config Release; ./LearnOpenGL' from build folder for MacOS
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <vector>
@@ -44,6 +45,10 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
     // glfw: window creation
     GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
@@ -70,9 +75,9 @@ int main()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Shaders creation
-    Shader shader{"shaders/vertex/vertexShaderSource.vs", "shaders/fragment/fragmentShaderSource.fs"};
-    Shader lightShader{"shaders/vertex/lightVertexShaderSource.vs", "shaders/fragment/lightFragmentShaderSource.fs"};
-    Shader lightingShader{"shaders/vertex/lightingVertexShaderSource.vs", "shaders/fragment/lightingFragmentShaderSource.fs"};
+    Shader shader("shaders/vertex/vertexShaderSource.vs", "shaders/fragment/fragmentShaderSource.fs");
+    Shader lightShader("shaders/vertex/lightVertexShaderSource.vs", "shaders/fragment/lightFragmentShaderSource.fs");
+    Shader lightingShader("shaders/vertex/lightingVertexShaderSource.vs", "shaders/fragment/lightingFragmentShaderSource.fs");
 
     glm::vec3 cubePositions[] = {
         glm::vec3(2.0f, 5.0f, -15.0f),

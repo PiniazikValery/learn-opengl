@@ -126,7 +126,7 @@ int main()
 
     // Загрузка изображения, создание текстуры и генерирование мипмап-уровней
     int width, height, nrChannels;
-    unsigned char *data = stbi_load("textures/marina.png", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("textures/wood_box.png", &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
@@ -202,6 +202,14 @@ int main()
         shader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
         shader.setMat3("normalMatrix", normalMatrix);
         shader.setVec3("viewPos", camera.position);
+        shader.setVec3("light.position", camera.GetViewMatrix() * glm::vec4(lightPos, 1.0f));
+        lightingShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+        lightingShader.setVec3("light.diffuse", 1.0f, 1.0f, 1.0f);
+        lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+        shader.setVec3("material.ambient", 1.0f, 1.0f, 1.0f);
+        shader.setVec3("material.diffuse", 1.0f, 1.0f, 1.0f);
+        shader.setVec3("material.specular", 1.0f, 1.0f, 1.0f);
+        shader.setFloat("material.shininess", 32.0f);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
@@ -217,7 +225,6 @@ int main()
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
         lightingShader.use();
-        lightingShader.setVec3("lightPos", lightPos);
         model = glm::translate(glm::mat4(1.0f), lightingPos);
         normalMatrix = glm::mat3(glm::transpose(glm::inverse(camera.GetViewMatrix() * model)));
         unsigned int lightingModelLoc = glGetUniformLocation(lightingShader.ID, "model");
@@ -225,10 +232,16 @@ int main()
         unsigned int lightingViewLoc = glGetUniformLocation(lightingShader.ID, "view");
         glUniformMatrix4fv(lightingViewLoc, 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
         lightingShader.setMat4("projection", projection);
-        lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-        lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
         lightingShader.setMat3("normalMatrix", normalMatrix);
         lightingShader.setVec3("viewPos", camera.position);
+        lightingShader.setVec3("light.position", camera.GetViewMatrix() * glm::vec4(lightPos, 1.0f));
+        lightingShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+        lightingShader.setVec3("light.diffuse", 1.0f, 1.0f, 1.0f);
+        lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+        lightingShader.setVec3("material.ambient", 0.24725f, 0.1995f, 0.0745f);
+        lightingShader.setVec3("material.diffuse", 0.75164f, 0.60648f, 0.22648f);
+        lightingShader.setVec3("material.specular", 0.628281f, 0.555802f, 0.366065f);
+        lightingShader.setFloat("material.shininess", 51.2f);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
@@ -247,13 +260,7 @@ int main()
             normalMatrix = glm::mat3(glm::transpose(glm::inverse(camera.GetViewMatrix() * model)));
             shader.use();
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
-            shader.setVec3("lightPos", lightPos);
-            shader.setMat4("projection", projection);
-            shader.setFloat("textureLevel", textureLevel);
-            shader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
             shader.setMat3("normalMatrix", normalMatrix);
-            shader.setVec3("viewPos", camera.position);
 
             glBindVertexArray(VAO);
             glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);

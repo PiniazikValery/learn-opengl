@@ -11,6 +11,7 @@
 #include "./Camera/Camera.h"
 #include "./stb_image/stb_image.h"
 #include "./models/Cube/Cube.h"
+#include "./TextureLoader/TextureLoader.h"
 #include <glm/gtx/string_cast.hpp>
 
 bool filled = true;
@@ -110,54 +111,11 @@ int main()
     glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void *)(8 * sizeof(float)));
     glEnableVertexAttribArray(3);
 
-    // Загрузка и создание текстуры
+    // Load textures
     stbi_set_flip_vertically_on_load(true);
-    unsigned int textures[2];
-    glGenTextures(2, textures);
-    glBindTexture(GL_TEXTURE_2D, textures[0]); // все последующие GL_TEXTURE_2D-операции теперь будут влиять на данный текстурный объект
 
-    // Установка параметров наложения текстуры
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // установка метода наложения текстуры GL_REPEAT (стандартный метод наложения)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    // Установка параметров фильтрации текстуры
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    // Загрузка изображения, создание текстуры и генерирование мипмап-уровней
-    int width, height, nrChannels;
-    unsigned char *data = stbi_load("textures/wood_box.png", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
-
-    // Second texture
-    glBindTexture(GL_TEXTURE_2D, textures[1]);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    data = stbi_load("textures/awesomeface.png", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
+    unsigned int firstTexture = TextureLoader::loadTexture("textures/wood_box.png");
+    unsigned int secondTexture = TextureLoader::loadTexture("textures/awesomeface.png");
 
     shader.use();
 
@@ -175,9 +133,7 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textures[0]);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, textures[1]);
+        glBindTexture(GL_TEXTURE_2D, secondTexture);
 
         processInput(window, camera, deltaTime);
 
@@ -245,6 +201,8 @@ int main()
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, firstTexture);
         for (int i = 0; i < *(&cubePositions + 1) - cubePositions; i++)
         {
             model = glm::mat4(1.0f);

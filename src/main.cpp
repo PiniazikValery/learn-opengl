@@ -116,6 +116,8 @@ int main()
 
     unsigned int firstTexture = TextureLoader::loadTexture("textures/wood_box.png");
     unsigned int secondTexture = TextureLoader::loadTexture("textures/awesomeface.png");
+    unsigned int specularTexture = TextureLoader::loadTexture("textures/wood_box_specular.png");
+    unsigned int emissionTexture = TextureLoader::loadTexture("textures/box_emission.jpg");
 
     shader.use();
 
@@ -134,6 +136,12 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, secondTexture);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, firstTexture);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, specularTexture);
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, emissionTexture);
 
         processInput(window, camera, deltaTime);
 
@@ -159,9 +167,9 @@ int main()
         shader.setMat3("normalMatrix", normalMatrix);
         shader.setVec3("viewPos", camera.position);
         shader.setVec3("light.position", camera.GetViewMatrix() * glm::vec4(lightPos, 1.0f));
-        lightingShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
-        lightingShader.setVec3("light.diffuse", 1.0f, 1.0f, 1.0f);
-        lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+        shader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+        shader.setVec3("light.diffuse", 1.0f, 1.0f, 1.0f);
+        shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
         shader.setVec3("material.ambient", 1.0f, 1.0f, 1.0f);
         shader.setVec3("material.diffuse", 1.0f, 1.0f, 1.0f);
         shader.setVec3("material.specular", 1.0f, 1.0f, 1.0f);
@@ -194,10 +202,11 @@ int main()
         lightingShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
         lightingShader.setVec3("light.diffuse", 1.0f, 1.0f, 1.0f);
         lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-        lightingShader.setVec3("material.ambient", 0.24725f, 0.1995f, 0.0745f);
-        lightingShader.setVec3("material.diffuse", 0.75164f, 0.60648f, 0.22648f);
-        lightingShader.setVec3("material.specular", 0.628281f, 0.555802f, 0.366065f);
-        lightingShader.setFloat("material.shininess", 51.2f);
+        lightingShader.setInt("material.diffuse", 1);
+        lightingShader.setInt("material.specular", 2);
+        lightingShader.setInt("material.emission", 3);
+        lightingShader.setBool("material.withEmission", false);
+        lightingShader.setFloat("material.shininess", 32.0f);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 

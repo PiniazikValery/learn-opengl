@@ -44,7 +44,6 @@ glm::mat4 Camera::GetViewMatrix()
 
 void Camera::setTarget(glm::vec3 *target, glm::vec3 positionFromTarget)
 {
-    // up = worldUp;
     lookAtTarget = true;
     this->target = target;
     this->positionFromTarget = -positionFromTarget;
@@ -53,7 +52,6 @@ void Camera::setTarget(glm::vec3 *target, glm::vec3 positionFromTarget)
 
 void Camera::removeTarget()
 {
-    // up = worldUp;
     lookAtTarget = false;
     this->target = nullptr;
     this->positionFromTarget = glm::vec3(0);
@@ -72,9 +70,9 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
     if (direction == RIGHT)
         position += right * velocity;
     if (direction == UP)
-        position += up * velocity;
+        position += worldUp * velocity;
     if (direction == DOWN)
-        position -= up * velocity;
+        position -= worldUp * velocity;
 }
 
 void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch)
@@ -85,7 +83,6 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constr
     yaw += xoffset;
     pitch += yoffset;
 
-    // Убеждаемся, что когда тангаж выходит за пределы обзора, экран не переворачивается
     if (constrainPitch)
     {
         if (pitch > 89.0f)
@@ -94,6 +91,5 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constr
             pitch = -89.0f;
     }
 
-    // Обновляем значения вектора-прямо, вектора-вправо и вектора-вверх, используя обновленные значения углов Эйлера
     updateCameraVectors();
 }

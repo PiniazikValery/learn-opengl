@@ -163,10 +163,13 @@ int main()
         shader.setMat4("projection", projection);
         shader.setMat3("normalMatrix", normalMatrix);
         shader.setVec3("viewPos", camera.position);
-        shader.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
+        shader.setVec3("light.position", lightPos);
         shader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
         shader.setVec3("light.diffuse", 1.0f, 1.0f, 1.0f);
         shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+        shader.setFloat("light.constant", 1.0f);
+        shader.setFloat("light.linear", 0.014f);
+        shader.setFloat("light.quadratic", 0.0007f);
         shader.setInt("material.diffuse", 0);
         shader.setVec3("material.specular", 1.0f, 1.0f, 1.0f);
         shader.setFloat("material.shininess", 32.0f);
@@ -276,7 +279,8 @@ void processInput(GLFWwindow *window, Camera &camera, float deltaTime)
     {
         if (camera.lookAtTarget)
         {
-            mainCubePosition->z -= deltaTime * 1.0f;
+            mainCubePosition->z -= deltaTime * 5.0f;
+            camera.followTarget();
         }
         else
         {
@@ -287,7 +291,8 @@ void processInput(GLFWwindow *window, Camera &camera, float deltaTime)
     {
         if (camera.lookAtTarget)
         {
-            mainCubePosition->z += deltaTime * 1.0f;
+            mainCubePosition->z += deltaTime * 5.0f;
+            camera.followTarget();
         }
         else
         {
@@ -298,7 +303,8 @@ void processInput(GLFWwindow *window, Camera &camera, float deltaTime)
     {
         if (camera.lookAtTarget)
         {
-            mainCubePosition->x -= deltaTime * 1.0f;
+            mainCubePosition->x -= deltaTime * 5.0f;
+            camera.followTarget();
         }
         else
         {
@@ -309,7 +315,8 @@ void processInput(GLFWwindow *window, Camera &camera, float deltaTime)
     {
         if (camera.lookAtTarget)
         {
-            mainCubePosition->x += deltaTime * 1.0f;
+            mainCubePosition->x += deltaTime * 5.0f;
+            camera.followTarget();
         }
         else
         {
@@ -320,7 +327,8 @@ void processInput(GLFWwindow *window, Camera &camera, float deltaTime)
     {
         if (camera.lookAtTarget)
         {
-            mainCubePosition->y += deltaTime * 1.0f;
+            mainCubePosition->y += deltaTime * 5.0f;
+            camera.followTarget();
         }
         else
         {
@@ -331,7 +339,8 @@ void processInput(GLFWwindow *window, Camera &camera, float deltaTime)
     {
         if (camera.lookAtTarget)
         {
-            mainCubePosition->y -= deltaTime * 1.0f;
+            mainCubePosition->y -= deltaTime * 5.0f;
+            camera.followTarget();
         }
         else
         {

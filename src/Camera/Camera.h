@@ -44,6 +44,7 @@ public:
     bool lookAtTarget = false;
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = CAM_YAW, float pitch = CAM_PITCH);
     glm::mat4 GetViewMatrix();
+    void followTarget();
     void setTarget(glm::vec3 *target, glm::vec3 positionFromTarget);
     void removeTarget();
     void ProcessKeyboard(Camera_Movement direction, float deltaTime);

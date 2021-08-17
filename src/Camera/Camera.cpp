@@ -8,6 +8,7 @@ void Camera::updateCameraVectors()
         positionFromTarget.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch)) * -camRange;
         positionFromTarget.y = sin(glm::radians(pitch)) * -camRange;
         positionFromTarget.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch)) * -camRange;
+        followTarget();
     }
     else
     {
@@ -34,11 +35,19 @@ glm::mat4 Camera::GetViewMatrix()
 {
     if (lookAtTarget)
     {
-        return glm::lookAt(*target + positionFromTarget, *target, worldUp);
+        return glm::lookAt(position, *target, worldUp);
     }
     else
     {
         return glm::lookAt(position, position + front, up);
+    }
+}
+
+void Camera::followTarget()
+{
+    if (lookAtTarget)
+    {
+        position = *target + positionFromTarget;
     }
 }
 

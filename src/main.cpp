@@ -115,7 +115,7 @@ int main()
     stbi_set_flip_vertically_on_load(true);
 
     unsigned int firstTexture = TextureLoader::loadTexture("textures/wood_box.png");
-    unsigned int secondTexture = TextureLoader::loadTexture("textures/awesomeface.png");
+    unsigned int secondTexture = TextureLoader::loadTexture("textures/marina.png");
     unsigned int specularTexture = TextureLoader::loadTexture("textures/wood_box_specular.png");
     unsigned int emissionTexture = TextureLoader::loadTexture("textures/box_emission.jpg");
 
@@ -128,7 +128,7 @@ int main()
     while (!glfwWindowShouldClose(window))
     {
         // Delta time calculation
-        float currentFrame = glfwGetTime();
+        float currentFrame = (float)glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
@@ -152,7 +152,7 @@ int main()
         model = glm::translate(model, *mainCubePosition);
         model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-        normalMatrix = glm::mat3(glm::transpose(glm::inverse(camera.GetViewMatrix() * model)));
+        normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
 
         projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
 
@@ -161,17 +161,13 @@ int main()
         unsigned int viewLoc = glGetUniformLocation(shader.ID, "view");
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
         shader.setMat4("projection", projection);
-        shader.setFloat("textureLevel", textureLevel);
-        shader.setVec3("lightPos", lightPos);
-        shader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
         shader.setMat3("normalMatrix", normalMatrix);
         shader.setVec3("viewPos", camera.position);
-        shader.setVec3("light.position", camera.GetViewMatrix() * glm::vec4(lightPos, 1.0f));
+        shader.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
         shader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
         shader.setVec3("light.diffuse", 1.0f, 1.0f, 1.0f);
         shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-        shader.setVec3("material.ambient", 1.0f, 1.0f, 1.0f);
-        shader.setVec3("material.diffuse", 1.0f, 1.0f, 1.0f);
+        shader.setInt("material.diffuse", 0);
         shader.setVec3("material.specular", 1.0f, 1.0f, 1.0f);
         shader.setFloat("material.shininess", 32.0f);
 
@@ -190,7 +186,8 @@ int main()
 
         lightingShader.use();
         model = glm::translate(glm::mat4(1.0f), lightingPos);
-        normalMatrix = glm::mat3(glm::transpose(glm::inverse(camera.GetViewMatrix() * model)));
+        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
         unsigned int lightingModelLoc = glGetUniformLocation(lightingShader.ID, "model");
         glUniformMatrix4fv(lightingModelLoc, 1, GL_FALSE, glm::value_ptr(model));
         unsigned int lightingViewLoc = glGetUniformLocation(lightingShader.ID, "view");
@@ -198,20 +195,16 @@ int main()
         lightingShader.setMat4("projection", projection);
         lightingShader.setMat3("normalMatrix", normalMatrix);
         lightingShader.setVec3("viewPos", camera.position);
-        lightingShader.setVec3("light.position", camera.GetViewMatrix() * glm::vec4(lightPos, 1.0f));
+        lightingShader.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
         lightingShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
         lightingShader.setVec3("light.diffuse", 1.0f, 1.0f, 1.0f);
         lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
         lightingShader.setInt("material.diffuse", 1);
         lightingShader.setInt("material.specular", 2);
-        lightingShader.setInt("material.emission", 3);
-        lightingShader.setBool("material.withEmission", false);
         lightingShader.setFloat("material.shininess", 32.0f);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, firstTexture);
         for (int i = 0; i < *(&cubePositions + 1) - cubePositions; i++)
         {
             model = glm::mat4(1.0f);
@@ -224,7 +217,7 @@ int main()
             {
                 model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
             }
-            normalMatrix = glm::mat3(glm::transpose(glm::inverse(camera.GetViewMatrix() * model)));
+            normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
             shader.use();
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
             shader.setMat3("normalMatrix", normalMatrix);
@@ -248,15 +241,15 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
     if (firstMouse)
     {
-        lastX = xpos;
-        lastY = ypos;
+        lastX = (float)xpos;
+        lastY = (float)ypos;
         firstMouse = false;
     }
 
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
-    lastX = xpos;
-    lastY = ypos;
+    float xoffset = (float)xpos - lastX;
+    float yoffset = lastY - (float)ypos;
+    lastX = (float)xpos;
+    lastY = (float)ypos;
 
     camera.ProcessMouseMovement(xoffset, yoffset);
 }
@@ -349,23 +342,11 @@ void processInput(GLFWwindow *window, Camera &camera, float deltaTime)
     {
         glfwSetWindowShouldClose(window, true);
     }
-    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
-    {
-        textureLevel += 1.5f * deltaTime;
-        if (textureLevel >= 1.0f)
-            textureLevel = 1.0f;
-    }
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-    {
-        textureLevel -= 1.5f * deltaTime;
-        if (textureLevel <= 0.0f)
-            textureLevel = 0.0f;
-    }
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
-    SCR_WIDTH = (float)width;
-    SCR_HEIGHT = (float)height;
+    SCR_WIDTH = width;
+    SCR_HEIGHT = height;
     glViewport(0, 0, width, height);
 }

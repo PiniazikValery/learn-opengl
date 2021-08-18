@@ -163,7 +163,10 @@ int main()
         shader.setMat4("projection", projection);
         shader.setMat3("normalMatrix", normalMatrix);
         shader.setVec3("viewPos", camera.position);
-        shader.setVec3("light.position", lightPos);
+        shader.setVec3("light.position", camera.position);
+        shader.setVec3("light.direction", camera.front);
+        shader.setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+        shader.setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
         shader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
         shader.setVec3("light.diffuse", 1.0f, 1.0f, 1.0f);
         shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);

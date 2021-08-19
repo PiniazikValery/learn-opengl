@@ -11,6 +11,7 @@
 #include "./Camera/Camera.h"
 #include "./stb_image/stb_image.h"
 #include "./models/Cube/Cube.h"
+#include "./models/MinecraftCube/MinecraftCube.h"
 #include "./TextureLoader/TextureLoader.h"
 #include <glm/gtx/string_cast.hpp>
 
@@ -91,17 +92,32 @@ int main()
         glm::vec3(1.5f, 0.2f, -1.5f),
         glm::vec3(-1.3f, 1.0f, -1.5f)};
 
-    unsigned int VBO, VAO, EBO;
-    glGenVertexArrays(1, &VAO); // мы также можем генерировать несколько VAO или буферов одновременно
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+    unsigned int VBOs[2], VAOs[2], EBOs[2];
+    glGenVertexArrays(2, VAOs); // мы также можем генерировать несколько VAO или буферов одновременно
+    glGenBuffers(2, VBOs);
+    glGenBuffers(2, EBOs);
 
-    // Configuring first triangle
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    // Configuring cube vertices
+    glBindVertexArray(VAOs[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[0]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(CubeModel::indices), CubeModel::indices, GL_STATIC_DRAW);
     glBufferData(GL_ARRAY_BUFFER, sizeof(CubeModel::vertices), CubeModel::vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void *)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void *)(8 * sizeof(float)));
+    glEnableVertexAttribArray(3);
+
+    // Configuring minecraft dirt cube vertices
+    glBindVertexArray(VAOs[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[1]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(MinecraftCubeModel::indices), MinecraftCubeModel::indices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(MinecraftCubeModel::vertices), MinecraftCubeModel::vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void *)(3 * sizeof(float)));
@@ -118,6 +134,7 @@ int main()
     unsigned int secondTexture = TextureLoader::loadTexture("textures/marina.png");
     unsigned int specularTexture = TextureLoader::loadTexture("textures/wood_box_specular.png");
     unsigned int emissionTexture = TextureLoader::loadTexture("textures/box_emission.jpg");
+    unsigned int minecraftDirtTexture = TextureLoader::loadTexture("textures/minecraft_dirt.png");
 
     shader.use();
 
@@ -142,6 +159,8 @@ int main()
         glBindTexture(GL_TEXTURE_2D, specularTexture);
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, emissionTexture);
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, minecraftDirtTexture);
 
         processInput(window, camera, deltaTime);
 
@@ -173,11 +192,11 @@ int main()
         shader.setFloat("light.constant", 1.0f);
         shader.setFloat("light.linear", 0.014f);
         shader.setFloat("light.quadratic", 0.0007f);
-        shader.setInt("material.diffuse", 0);
+        shader.setInt("material.diffuse", 4);
         shader.setVec3("material.specular", 1.0f, 1.0f, 1.0f);
         shader.setFloat("material.shininess", 32.0f);
 
-        glBindVertexArray(VAO);
+        glBindVertexArray(VAOs[1]);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
         lightShader.use();
@@ -187,7 +206,7 @@ int main()
         unsigned int lightViewLoc = glGetUniformLocation(lightShader.ID, "view");
         glUniformMatrix4fv(lightViewLoc, 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
         lightShader.setMat4("projection", projection);
-        glBindVertexArray(VAO);
+        glBindVertexArray(VAOs[0]);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
         lightingShader.use();
@@ -208,7 +227,7 @@ int main()
         lightingShader.setInt("material.diffuse", 1);
         lightingShader.setInt("material.specular", 2);
         lightingShader.setFloat("material.shininess", 32.0f);
-        glBindVertexArray(VAO);
+        glBindVertexArray(VAOs[0]);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
         for (int i = 0; i < *(&cubePositions + 1) - cubePositions; i++)
@@ -225,10 +244,11 @@ int main()
             }
             normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
             shader.use();
+            shader.setInt("material.diffuse", 0);
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
             shader.setMat3("normalMatrix", normalMatrix);
 
-            glBindVertexArray(VAO);
+            glBindVertexArray(VAOs[0]);
             glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
         }
 
@@ -236,8 +256,8 @@ int main()
         glfwPollEvents();
     }
 
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+    glDeleteVertexArrays(2, VAOs);
+    glDeleteBuffers(2, VBOs);
 
     glfwTerminate();
     return 0;

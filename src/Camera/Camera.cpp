@@ -4,10 +4,6 @@ void Camera::updateCameraVectors()
 {
     if (lookAtTarget)
     {
-        float camRange = glm::length(glm::vec3(0) - positionFromTarget);
-        positionFromTarget.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch)) * -camRange;
-        positionFromTarget.y = sin(glm::radians(pitch)) * -camRange;
-        positionFromTarget.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch)) * -camRange;
         followTarget();
     }
     else
@@ -47,7 +43,14 @@ void Camera::followTarget()
 {
     if (lookAtTarget)
     {
+        float camRange = glm::length(glm::vec3(0) - positionFromTarget);
+        positionFromTarget.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch)) * -camRange;
+        positionFromTarget.y = sin(glm::radians(pitch)) * -camRange;
+        positionFromTarget.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch)) * -camRange;
         position = *target + positionFromTarget;
+        front = glm::normalize(*target - position);
+        right = glm::normalize(glm::cross(front, worldUp));
+        up = glm::normalize(glm::cross(right, front));
     }
 }
 

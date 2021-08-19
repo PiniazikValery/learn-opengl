@@ -220,10 +220,33 @@ int main()
         lightingShader.setMat4("projection", projection);
         lightingShader.setMat3("normalMatrix", normalMatrix);
         lightingShader.setVec3("viewPos", camera.position);
-        lightingShader.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
-        lightingShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
-        lightingShader.setVec3("light.diffuse", 1.0f, 1.0f, 1.0f);
-        lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+
+        lightingShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+        lightingShader.setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
+        lightingShader.setVec3("dirLight.diffuse", 1.0f, 1.0f, 1.0f);
+        lightingShader.setVec3("dirLight.specular", 1.0f, 1.0f, 1.0f);
+
+        lightingShader.setInt("pointLightsCount", 1);
+        lightingShader.setVec3("pointLights[0].position", lightPos);
+        lightingShader.setVec3("pointLights[0].ambient", 0.2f, 0.2f, 0.2f);
+        lightingShader.setVec3("pointLights[0].diffuse", 1.0f, 1.0f, 1.0f);
+        lightingShader.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+        lightingShader.setFloat("pointLights[0].constant", 1.0f);
+        lightingShader.setFloat("pointLights[0].linear", 0.014f);
+        lightingShader.setFloat("pointLights[0].quadratic", 0.0007f);
+
+        lightingShader.setInt("spotLightsCount", 1);
+        lightingShader.setVec3("spotLights[0].position", camera.position);
+        lightingShader.setVec3("spotLights[0].direction", camera.front);
+        lightingShader.setFloat("spotLights[0].cutOff", glm::cos(glm::radians(12.5f)));
+        lightingShader.setFloat("spotLights[0].outerCutOff", glm::cos(glm::radians(17.5f)));
+        lightingShader.setVec3("spotLights[0].ambient", 0.2f, 0.2f, 0.2f);
+        lightingShader.setVec3("spotLights[0].diffuse", 1.0f, 1.0f, 1.0f);
+        lightingShader.setVec3("spotLights[0].specular", 1.0f, 1.0f, 1.0f);
+        lightingShader.setFloat("spotLights[0].constant", 1.0f);
+        lightingShader.setFloat("spotLights[0].linear", 0.014f);
+        lightingShader.setFloat("spotLights[0].quadratic", 0.0007f);
+
         lightingShader.setInt("material.diffuse", 1);
         lightingShader.setInt("material.specular", 2);
         lightingShader.setFloat("material.shininess", 32.0f);

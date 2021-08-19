@@ -25,6 +25,9 @@ target_link_libraries(${PROJECT_NAME} glad)
 add_subdirectory(external/glm)
 target_link_libraries(${PROJECT_NAME} glm)
 
+add_subdirectory(external/pybullet)
+target_link_libraries(${PROJECT_NAME} pybullet)
+
 # Copy vertex and fragment shaders
 file(GLOB_RECURSE V_SHADER_SOURCES "src/shaders/**.vs")
 file(GLOB_RECURSE F_SHADER_SOURCES "src/shaders/**.fs")

@@ -28,6 +28,9 @@ target_link_libraries(${PROJECT_NAME} glm)
 add_subdirectory(external/pybullet)
 target_link_libraries(${PROJECT_NAME} pybullet)
 
+add_subdirectory(external/assimp)
+target_link_libraries(${PROJECT_NAME} assimp)
+
 # Copy vertex and fragment shaders
 file(GLOB_RECURSE V_SHADER_SOURCES "src/shaders/**.vs")
 file(GLOB_RECURSE F_SHADER_SOURCES "src/shaders/**.fs")

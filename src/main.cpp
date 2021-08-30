@@ -13,7 +13,7 @@
 #include "./models/Cube/Cube.h"
 #include "./models/MinecraftCube/MinecraftCube.h"
 #include "./TextureLoader/TextureLoader.h"
-#include <glm/gtx/string_cast.hpp>
+#include "./3DModel/Model/Model.h"
 
 bool filled = true;
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -38,6 +38,7 @@ bool firstMouse = true;
 glm::vec3 *mainCubePosition = new glm::vec3(0);
 glm::vec3 lightingPos(10.2f, 6.0f, 6.0f);
 glm::vec3 lightPos(5.2f, 6.0f, 6.0f);
+glm::vec3 modelPos(0.2f, 6.0f, 6.0f);
 
 int main()
 {
@@ -77,9 +78,10 @@ int main()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Shaders creation
-    Shader shader("shaders/vertex/vertexShaderSource.vs", "shaders/fragment/fragmentShaderSource.fs");
-    Shader lightShader("shaders/vertex/lightVertexShaderSource.vs", "shaders/fragment/lightFragmentShaderSource.fs");
-    Shader lightingShader("shaders/vertex/lightingVertexShaderSource.vs", "shaders/fragment/lightingFragmentShaderSource.fs");
+    Shader modelShader("shaders/backpackShaders/index.vs", "shaders/backpackShaders/index.fs");
+    Shader shader("shaders/vertexShaderSource.vs", "shaders/fragmentShaderSource.fs");
+    Shader lightShader("shaders/light/lightVertexShaderSource.vs", "shaders/light/lightFragmentShaderSource.fs");
+    Shader lightingShader("shaders/light/lightingVertexShaderSource.vs", "shaders/light/lightingFragmentShaderSource.fs");
 
     glm::vec3 cubePositions[] = {
         glm::vec3(2.0f, 5.0f, -15.0f),
@@ -136,10 +138,8 @@ int main()
     unsigned int emissionTexture = TextureLoader::loadTexture("textures/box_emission.jpg");
     unsigned int minecraftDirtTexture = TextureLoader::loadTexture("textures/minecraft_dirt.png");
 
-    shader.use();
-
-    shader.setInt("box_texture", 0);
-    shader.setInt("smile_texture", 1);
+    //Load model
+    Model ourModel("resources/objects/backpack/backpack.obj");
 
     // Render loop
     while (!glfwWindowShouldClose(window))
@@ -175,6 +175,7 @@ int main()
 
         projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
 
+        shader.use();
         unsigned int modelLoc = glGetUniformLocation(shader.ID, "model");
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         unsigned int viewLoc = glGetUniformLocation(shader.ID, "view");
@@ -274,6 +275,54 @@ int main()
             glBindVertexArray(VAOs[0]);
             glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
         }
+
+        modelShader.use();
+
+        modelShader.setVec3("viewPos", camera.position);
+        modelShader.setFloat("material.shininess", 32.0f);
+
+        // Direction light
+        modelShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+        modelShader.setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
+        modelShader.setVec3("dirLight.diffuse", 1.0f, 1.0f, 1.0f);
+        modelShader.setVec3("dirLight.specular", 1.0f, 1.0f, 1.0f);
+
+        // Point light
+        modelShader.setInt("pointLightsCount", 1);
+        modelShader.setVec3("pointLights[0].position", lightPos);
+        modelShader.setVec3("pointLights[0].ambient", 0.2f, 0.2f, 0.2f);
+        modelShader.setVec3("pointLights[0].diffuse", 1.0f, 1.0f, 1.0f);
+        modelShader.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+        modelShader.setFloat("pointLights[0].constant", 1.0f);
+        modelShader.setFloat("pointLights[0].linear", 0.014f);
+        modelShader.setFloat("pointLights[0].quadratic", 0.0007f);
+
+        // Spot light
+        modelShader.setInt("spotLightsCount", 1);
+        modelShader.setVec3("spotLights[0].position", camera.position);
+        modelShader.setVec3("spotLights[0].direction", camera.front);
+        modelShader.setFloat("spotLights[0].cutOff", glm::cos(glm::radians(12.5f)));
+        modelShader.setFloat("spotLights[0].outerCutOff", glm::cos(glm::radians(17.5f)));
+        modelShader.setVec3("spotLights[0].ambient", 0.2f, 0.2f, 0.2f);
+        modelShader.setVec3("spotLights[0].diffuse", 1.0f, 1.0f, 1.0f);
+        modelShader.setVec3("spotLights[0].specular", 1.0f, 1.0f, 1.0f);
+        modelShader.setFloat("spotLights[0].constant", 1.0f);
+        modelShader.setFloat("spotLights[0].linear", 0.014f);
+        modelShader.setFloat("spotLights[0].quadratic", 0.0007f);
+
+        modelShader.setMat4("projection", projection);
+        unsigned int modelViewLoc = glGetUniformLocation(modelShader.ID, "view");
+        glUniformMatrix4fv(modelViewLoc, 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, modelPos);
+        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+        normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+        modelShader.setMat3("normalMatrix", normalMatrix);
+        modelShader.setMat4("model", model);
+
+        ourModel.Draw(modelShader);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

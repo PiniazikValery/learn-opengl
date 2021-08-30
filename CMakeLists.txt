@@ -32,35 +32,13 @@ add_subdirectory(external/assimp)
 target_link_libraries(${PROJECT_NAME} assimp)
 
 # Copy vertex and fragment shaders
-file(GLOB_RECURSE V_SHADER_SOURCES "src/shaders/**.vs")
-file(GLOB_RECURSE F_SHADER_SOURCES "src/shaders/**.fs")
-set(BUILD_VERTEX_SHADER_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/vertex")
-set(BUILD_FRAGMENT_SHADER_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/fragment")
-file(MAKE_DIRECTORY ${BUILD_VERTEX_SHADER_DIR})
-file(MAKE_DIRECTORY ${BUILD_FRAGMENT_SHADER_DIR})
-
-foreach(SHADER_SOURCE ${V_SHADER_SOURCES})
-    add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${SHADER_SOURCE} ${BUILD_VERTEX_SHADER_DIR}
-    )
-endforeach(SHADER_SOURCE)
-
-foreach(SHADER_SOURCE ${F_SHADER_SOURCES})
-    add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${SHADER_SOURCE} ${BUILD_FRAGMENT_SHADER_DIR}
-    )
-endforeach(SHADER_SOURCE)
+set(SHADERS_FOLDER "src/shaders")
+file(COPY ${SHADERS_FOLDER} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Copy textures
-file(GLOB_RECURSE TEXTURE_SOURCES "src/textures/**.*")
-set(BUILD_TEXTURE_DIR "${CMAKE_CURRENT_BINARY_DIR}/textures")
-file(MAKE_DIRECTORY ${BUILD_TEXTURE_DIR})
+set(TEXTURES_FOLDER "src/textures")
+file(COPY ${TEXTURES_FOLDER} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-foreach(TEXTURE_SOURCE ${TEXTURE_SOURCES})
-    add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${TEXTURE_SOURCE} ${BUILD_TEXTURE_DIR}
-    )
-endforeach(TEXTURE_SOURCE)
+#Copy resources
+set(RESOURCES_FOLDER "src/resources")
+file(COPY ${RESOURCES_FOLDER} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

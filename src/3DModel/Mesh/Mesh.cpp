@@ -15,11 +15,12 @@ std::string getTextureTypeName(TextureType type)
     }
 }
 
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, unsigned int materialIndex)
 {
     this->vertices = vertices;
     this->indices = indices;
     this->textures = textures;
+    this->materialIndex = materialIndex;
 
     setupMesh();
 }
@@ -60,22 +61,25 @@ void Mesh::Draw(Shader shader)
         glActiveTexture(GL_TEXTURE0 + i);
         std::string number;
         std::string name = getTextureTypeName(textures[i].type);
-        switch (textures[i].type)
+        if (materialIndex == textures[i].materialIndex)
         {
-        case DIFFUSE:
-            number = std::to_string(diffuseNr++);
-            break;
-        case SPECULAR:
-            number = std::to_string(specularNr++);
-            break;
-        case EMISSION:
-            number = std::to_string(emissionNr++);
-            break;
-        default:
-            break;
+            switch (textures[i].type)
+            {
+            case DIFFUSE:
+                number = std::to_string(diffuseNr++);
+                break;
+            case SPECULAR:
+                number = std::to_string(specularNr++);
+                break;
+            case EMISSION:
+                number = std::to_string(emissionNr++);
+                break;
+            default:
+                break;
+            }
+            shader.setInt(("material." + name + number).c_str(), i);
+            glBindTexture(GL_TEXTURE_2D, textures[i].id);
         }
-        shader.setInt(("material." + name + number).c_str(), i);
-        glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
 
     glBindVertexArray(VAO);

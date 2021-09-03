@@ -26,6 +26,7 @@ struct Vertex
 struct Texture
 {
     unsigned int id;
+    unsigned int materialIndex;
     TextureType type;
     std::string path;
 };
@@ -38,11 +39,12 @@ private:
     void setupMesh();
 
 public:
+    unsigned int materialIndex;
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     std::vector<Texture> textures;
 
-    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
+    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, unsigned int materialIndex);
     void Draw(Shader shader);
 };
 

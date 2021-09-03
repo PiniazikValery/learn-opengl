@@ -39,6 +39,8 @@ glm::vec3 *mainCubePosition = new glm::vec3(0);
 glm::vec3 lightingPos(10.2f, 6.0f, 6.0f);
 glm::vec3 lightPos(5.2f, 6.0f, 6.0f);
 glm::vec3 modelPos(0.2f, 6.0f, 6.0f);
+glm::vec3 sasukePos(-5.2f, 6.0f, 6.0f);
+glm::vec3 narutoPos(-10.2f, 6.0f, 6.0f);
 
 int main()
 {
@@ -78,6 +80,7 @@ int main()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Shaders creation
+    Shader narutoCharacterShader("shaders/sasukeShaders/index.vs", "shaders/sasukeShaders/index.fs");
     Shader modelShader("shaders/backpackShaders/index.vs", "shaders/backpackShaders/index.fs");
     Shader shader("shaders/vertexShaderSource.vs", "shaders/fragmentShaderSource.fs");
     Shader lightShader("shaders/light/lightVertexShaderSource.vs", "shaders/light/lightFragmentShaderSource.fs");
@@ -129,9 +132,6 @@ int main()
     glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void *)(8 * sizeof(float)));
     glEnableVertexAttribArray(3);
 
-    // Load textures
-    stbi_set_flip_vertically_on_load(true);
-
     unsigned int firstTexture = TextureLoader::loadTexture("textures/wood_box.png");
     unsigned int secondTexture = TextureLoader::loadTexture("textures/marina.png");
     unsigned int specularTexture = TextureLoader::loadTexture("textures/wood_box_specular.png");
@@ -140,6 +140,8 @@ int main()
 
     //Load model
     Model ourModel("resources/objects/backpack/backpack.obj");
+    Model sasukeModel("resources/objects/sasuke/sasuke.obj");
+    Model narutoModel("resources/objects/naruto/naruto.obj");
 
     // Render loop
     while (!glfwWindowShouldClose(window))
@@ -323,6 +325,28 @@ int main()
         modelShader.setMat4("model", model);
 
         ourModel.Draw(modelShader);
+        narutoCharacterShader.use();
+        narutoCharacterShader.setVec3("viewPos", camera.position);
+        narutoCharacterShader.setMat4("projection", projection);
+        unsigned int sasukeViewLoc = glGetUniformLocation(narutoCharacterShader.ID, "view");
+        glUniformMatrix4fv(sasukeViewLoc, 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, sasukePos);
+        model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
+        normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+        narutoCharacterShader.setMat3("normalMatrix", normalMatrix);
+        narutoCharacterShader.setMat4("model", model);
+
+        sasukeModel.Draw(narutoCharacterShader);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, narutoPos);
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+        normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+        narutoCharacterShader.setMat3("normalMatrix", normalMatrix);
+        narutoCharacterShader.setMat4("model", model);
+
+        narutoModel.Draw(narutoCharacterShader);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

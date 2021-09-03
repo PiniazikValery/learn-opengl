@@ -1,0 +1,38 @@
+# Blender MTL File: 'None'
+# Material Count: 3
+
+newmtl ssk_eye.pngmat.002
+Ns 179.999996
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd ssk_eye.png
+map_d ssk_eye.png
+
+newmtl ssk_tex01.pngmat.002
+Ns 179.999996
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd ssk_tex01.png
+map_d ssk_tex01.png
+
+newmtl ssk_tex02.pngmat.002
+Ns 179.999996
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd ssk_tex02.png
+map_d ssk_tex02.png

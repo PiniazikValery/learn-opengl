@@ -52,10 +52,17 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
         vector.z = mesh->mVertices[i].z;
         vertex.Position = vector;
 
-        vector.x = mesh->mNormals[i].x;
-        vector.y = mesh->mNormals[i].y;
-        vector.z = mesh->mNormals[i].z;
-        vertex.Normal = vector;
+        if (mesh->mNormals)
+        {
+            vector.x = mesh->mNormals[i].x;
+            vector.y = mesh->mNormals[i].y;
+            vector.z = mesh->mNormals[i].z;
+            vertex.Normal = vector;
+        }
+        else
+        {
+            vertex.Normal = glm::vec3(0.0f);
+        }
 
         if (mesh->mTextureCoords[0])
         {
@@ -66,7 +73,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
         }
         else
         {
-            vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+            vertex.TexCoords = glm::vec2(0.0f);
         }
 
         vertices.push_back(vertex);
@@ -85,20 +92,20 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
     {
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
-        std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, DIFFUSE);
+        std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, DIFFUSE, mesh->mMaterialIndex);
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
-        std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, SPECULAR);
+        std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, SPECULAR, mesh->mMaterialIndex);
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
-        std::vector<Texture> emissionMaps = loadMaterialTextures(material, aiTextureType_EMISSIVE, EMISSION);
+        std::vector<Texture> emissionMaps = loadMaterialTextures(material, aiTextureType_EMISSIVE, EMISSION, mesh->mMaterialIndex);
         textures.insert(textures.end(), emissionMaps.begin(), emissionMaps.end());
     }
 
-    return Mesh(vertices, indices, textures);
+    return Mesh(vertices, indices, textures, mesh->mMaterialIndex);
 }
 
-std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType aiTexType, TextureType texType)
+std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType aiTexType, TextureType texType, unsigned int materialIndex)
 {
     std::vector<Texture> textures;
     for (unsigned int i = 0; i < mat->GetTextureCount(aiTexType); i++)
@@ -121,6 +128,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType 
             texture.id = TextureFromFile(str.C_Str(), directory);
             texture.type = texType;
             texture.path = str.C_Str();
+            texture.materialIndex = materialIndex;
             textures.push_back(texture);
             textures_loaded.push_back(texture);
         }

@@ -8,6 +8,24 @@ void Model::Draw(Shader &shader)
     }
 }
 
+void Model::DrawWithHighlight(Shader &shader, Shader &highlightShader, int ref)
+{
+    glStencilFunc(GL_ALWAYS, ref, 0xFF);
+    glStencilMask(0xFF);
+
+    shader.use();
+    Draw(shader);
+
+    glStencilFunc(GL_GREATER, ref, 0xFF);
+    glStencilMask(0x00);
+
+    highlightShader.use();
+    Draw(highlightShader);
+
+    glStencilMask(0xFF);
+    glStencilFunc(GL_ALWAYS, ref, 0xFF);
+}
+
 void Model::loadModel(std::string path)
 {
     Assimp::Importer import;
@@ -51,6 +69,8 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
         vector.y = mesh->mVertices[i].y;
         vector.z = mesh->mVertices[i].z;
         vertex.Position = vector;
+
+        processVertexMinmaxs(vector);
 
         if (mesh->mNormals)
         {
@@ -103,6 +123,17 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
     }
 
     return Mesh(vertices, indices, textures, mesh->mMaterialIndex);
+}
+
+void Model::processVertexMinmaxs(const glm::vec3 vertex)
+{
+    minmaxVertices.max.x = std::max(minmaxVertices.max.x, vertex.x);
+    minmaxVertices.max.y = std::max(minmaxVertices.max.y, vertex.y);
+    minmaxVertices.max.z = std::max(minmaxVertices.max.z, vertex.z);
+
+    minmaxVertices.min.x = std::min(minmaxVertices.min.x, vertex.x);
+    minmaxVertices.min.y = std::min(minmaxVertices.min.y, vertex.y);
+    minmaxVertices.min.z = std::min(minmaxVertices.min.z, vertex.z);
 }
 
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType aiTexType, TextureType texType, unsigned int materialIndex)
@@ -179,4 +210,20 @@ unsigned int TextureFromFile(const char *path, const std::string &directory)
 Model::Model(char *path)
 {
     loadModel(path);
+}
+
+glm::vec3 Model::getModelCenter()
+{
+    glm::vec3 result;
+
+    result.x = (minmaxVertices.max.x - minmaxVertices.min.x) / 2;
+    result.y = (minmaxVertices.max.y - minmaxVertices.min.y) / 2;
+    result.z = (minmaxVertices.max.z - minmaxVertices.min.z) / 2;
+
+    return result;
+}
+
+float Model::getModelHeight()
+{
+    return std::abs(minmaxVertices.max.y - minmaxVertices.min.y);
 }

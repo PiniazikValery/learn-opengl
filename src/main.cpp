@@ -77,6 +77,9 @@ int main()
 
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_STENCIL_TEST);
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Shaders creation
@@ -85,6 +88,7 @@ int main()
     Shader shader("shaders/vertexShaderSource.vs", "shaders/fragmentShaderSource.fs");
     Shader lightShader("shaders/light/lightVertexShaderSource.vs", "shaders/light/lightFragmentShaderSource.fs");
     Shader lightingShader("shaders/light/lightingVertexShaderSource.vs", "shaders/light/lightingFragmentShaderSource.fs");
+    Shader singleColorShader("shaders/singleColor/index.vs", "shaders/singleColor/index.fs");
 
     glm::vec3 cubePositions[] = {
         glm::vec3(2.0f, 5.0f, -15.0f),
@@ -151,8 +155,8 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearColor(0.16f, 0.16f, 0.16f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, secondTexture);
         glActiveTexture(GL_TEXTURE1);
@@ -163,6 +167,7 @@ int main()
         glBindTexture(GL_TEXTURE_2D, emissionTexture);
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, minecraftDirtTexture);
+        glStencilMask(0x00);
 
         processInput(window, camera, deltaTime);
 
@@ -325,6 +330,19 @@ int main()
         modelShader.setMat4("model", model);
 
         ourModel.Draw(modelShader);
+
+        singleColorShader.use();
+        singleColorShader.setVec3("viewPos", camera.position);
+        singleColorShader.setMat4("projection", projection);
+        unsigned int narutoViewLoc = glGetUniformLocation(singleColorShader.ID, "view");
+        glUniformMatrix4fv(narutoViewLoc, 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, sasukePos);
+        model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
+        singleColorShader.setMat4("model", model);
+        singleColorShader.setFloat("lineDegree", 0.0001);
+        singleColorShader.setVec3("color", glm::vec3(1, 0, 0));
+
         narutoCharacterShader.use();
         narutoCharacterShader.setVec3("viewPos", camera.position);
         narutoCharacterShader.setMat4("projection", projection);
@@ -334,19 +352,24 @@ int main()
         model = glm::translate(model, sasukePos);
         model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
         normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-        narutoCharacterShader.setMat3("normalMatrix", normalMatrix);
         narutoCharacterShader.setMat4("model", model);
 
-        sasukeModel.Draw(narutoCharacterShader);
+        sasukeModel.DrawWithHighlight(narutoCharacterShader, singleColorShader);
 
+        narutoCharacterShader.use();
         model = glm::mat4(1.0f);
         model = glm::translate(model, narutoPos);
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
         normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-        narutoCharacterShader.setMat3("normalMatrix", normalMatrix);
         narutoCharacterShader.setMat4("model", model);
 
-        narutoModel.Draw(narutoCharacterShader);
+        singleColorShader.use();
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, narutoPos);
+        singleColorShader.setMat4("model", model);
+        singleColorShader.setFloat("lineDegree", 0.01);
+        singleColorShader.setVec3("color", glm::vec3(0, 1, 0));
+
+        narutoModel.DrawWithHighlight(narutoCharacterShader, singleColorShader, 2);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
